@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from image_cropping import ImageCroppingMixin
 
-from webapp.models import GalleryPhoto, Discount, Roominess, TypeOfRoom, ServiceLanding
+from webapp.models import GalleryPhoto, Discount, Roominess, TypeOfRoom, ServiceLanding, Service
 
 
 class GalleryPhotoInlineAdmin(ImageCroppingMixin, admin.StackedInline):

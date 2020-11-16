@@ -1,8 +1,17 @@
 from django.db import models
 
 # Create your models here.
+from django.db.models import Min
 from django.utils.safestring import mark_safe
 from image_cropping import ImageRatioField
+
+
+SIDE_CHOICES = (
+    ('north', 'Север'),
+    ('south', 'Юг'),
+    ('west', 'Запад'),
+    ('east', 'Восток'),
+)
 
 
 class Discount(models.Model):
@@ -206,4 +215,65 @@ class ServiceLanding(models.Model):
     def __str__(self):
         return self.service
 
+
+class Guestroom(models.Model):
+    number = models.PositiveSmallIntegerField('Номер комнаты', null=True)
+    roominess = models.ForeignKey('webapp.Roominess', on_delete=models.CASCADE, related_name='rooms',
+                             verbose_name='Вмещаемость', null=True)
+    type = models.ForeignKey('webapp.TypeOfRoom', on_delete=models.CASCADE, related_name='rooms', verbose_name='Тип', null=True)
+    housing = models.ForeignKey('webapp.Housing', on_delete=models.CASCADE, related_name='rooms', verbose_name='Корпус', null=True)
+    beds_count = models.PositiveSmallIntegerField('Количество кроватей', default=0)
+    size = models.SmallIntegerField('Размер комнаты', null=True, blank=True)
+    #floor = models.ForeignKey('webapp.Floor', on_delete=models.CASCADE, related_name='rooms', verbose_name='Этаж', null=True)
+    description = models.TextField('Описание', null=True)
+    furniture = models.CharField(max_length=256, default='', verbose_name='Мебель', null=True)
+    side = models.CharField(max_length=50, choices=SIDE_CHOICES, default=SIDE_CHOICES[0][0],
+                            verbose_name='Сторона', null=True)
+    default_price = models.IntegerField('Цена по умолчанию', default=0,
+                                        help_text='Если в базе нет цен на период, указанный в брони, использовать эту цену для подсчета итоговой суммы.')
+    accessories = models.ManyToManyField('webapp.Accessories', blank=True, related_name='room_accessories', verbose_name='Принадлежности')
+    comfort = models.ManyToManyField('webapp.Comfort', blank=True, related_name='room_comforts', verbose_name='Услуги и удобства')
+    service = models.ManyToManyField('webapp.Service', blank=True, related_name='room_services', verbose_name='Сервис')
+    # restrictions = models.ManyToManyField('webapp.Restriction', blank=True, related_name='room_restrictions', verbose_name='Запрещено')
+    #view = models.ForeignKey('webapp.RoomView', on_delete=models.CASCADE, related_name='rooms', verbose_name='Вид', null=True)
+    image = models.ImageField(upload_to='room_main_images', null=True, blank=True, verbose_name='Фоновая картинка', help_text='Будет показана первой, что увидит пользователь')
+    cropping = ImageRatioField('image', '370x240')
+
+    class Meta:
+        verbose_name = 'Номер'
+        verbose_name_plural = 'Номера'
+        ordering = ('-id',)
+
+    def image_tag(self):
+        return mark_safe('<img src="/uploads/%s" style="max-width:200px;"/>' % (self.image))
+
+    image_tag.short_description = 'Главное фото комнаты'
+    image_tag.allow_tags = True
+
+    def __str__(self):
+        return "%s-%s" % (self.housing, self.number)
+
+    def get_price(self):
+        price = Price.objects.filter(room_type=self.type, roominess=self.roominess, housing=self.housing).aggregate(Min('price'))
+        if price['price__min'] is None:
+            return self.default_price
+        return price['price__min']
+
+
+class Price(models.Model):
+    room_type = models.ForeignKey('webapp.TypeOfRoom', on_delete=models.CASCADE, related_name='price', verbose_name='Тип номера',
+                             null=True)
+    roominess = models.ForeignKey('webapp.Roominess', on_delete=models.CASCADE, related_name='prices', verbose_name='Вместительность', null=True)
+    housing = models.ForeignKey('webapp.Housing', on_delete=models.CASCADE, related_name='prices', verbose_name='Корпус', null=True)
+    from_date = models.DateField('С')
+    to_date = models.DateField('До')
+    price = models.PositiveIntegerField('Цена')
+
+    class Meta:
+        verbose_name = 'Цена'
+        verbose_name_plural = 'Цены'
+        ordering = ('-id',)
+
+    def __str__(self):
+        return '%s' %(self.price) or ''
 
