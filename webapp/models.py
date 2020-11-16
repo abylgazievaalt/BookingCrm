@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.utils.safestring import mark_safe
+from image_cropping import ImageRatioField
 
 
 class Discount(models.Model):
