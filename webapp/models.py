@@ -373,7 +373,7 @@ class Guestroom(models.Model):
     housing = models.ForeignKey('webapp.Housing', on_delete=models.CASCADE, related_name='rooms', verbose_name='Корпус', null=True)
     beds_count = models.PositiveSmallIntegerField('Количество кроватей', default=0)
     size = models.SmallIntegerField('Размер комнаты', null=True, blank=True)
-    #floor = models.ForeignKey('webapp.Floor', on_delete=models.CASCADE, related_name='rooms', verbose_name='Этаж', null=True)
+    floor = models.ForeignKey('webapp.Floor', on_delete=models.CASCADE, related_name='rooms', verbose_name='Этаж', null=True)
     description = models.TextField('Описание', null=True)
     furniture = models.CharField(max_length=256, default='', verbose_name='Мебель', null=True)
     side = models.CharField(max_length=50, choices=SIDE_CHOICES, default=SIDE_CHOICES[0][0],
@@ -384,7 +384,7 @@ class Guestroom(models.Model):
     comfort = models.ManyToManyField('webapp.Comfort', blank=True, related_name='room_comforts', verbose_name='Услуги и удобства')
     service = models.ManyToManyField('webapp.Service', blank=True, related_name='room_services', verbose_name='Сервис')
     # restrictions = models.ManyToManyField('webapp.Restriction', blank=True, related_name='room_restrictions', verbose_name='Запрещено')
-    #view = models.ForeignKey('webapp.RoomView', on_delete=models.CASCADE, related_name='rooms', verbose_name='Вид', null=True)
+    view = models.ForeignKey('webapp.RoomView', on_delete=models.CASCADE, related_name='rooms', verbose_name='Вид', null=True)
     image = models.ImageField(upload_to='room_main_images', null=True, blank=True, verbose_name='Фоновая картинка', help_text='Будет показана первой, что увидит пользователь')
     cropping = ImageRatioField('image', '370x240')
 

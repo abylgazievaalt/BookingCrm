@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,22 +26,40 @@ SECRET_KEY = 'e&@=$fxy@b$7td1hpnbw4+-a-5lux8+vrg5*(1oq3griktfnlp'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100621440
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jet.dashboard',
+    'channels',
+    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'api',
     'webapp',
     'crm',
-    'silk'
+    'drf_yasg',
+    'rest_auth',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'rest_auth.registration',
+    'ckeditor',
+    'easy_thumbnails',
+    'silk',
 ]
+
+JET_SIDE_MENU_COMPACT = True
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'BookingCrm.urls'
@@ -74,7 +93,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BookingCrm.wsgi.application'
 
-
+ASGI_APPLICATION = "BookingCrm.routing.application"
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -85,6 +104,14 @@ DATABASES = {
     }
 }
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -104,6 +131,44 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+JET_SIDE_MENU_ITEMS = [  # A list of application or custom item dicts
+    {'label': 'Бронирования', 'app_label': 'webapp', 'items': [
+        {'name': 'reservation'},
+        {'name': 'discount'},
+        {'name': 'payment'}
+    ]},
+    {'label': 'Уборка номеров', 'app_label': 'webapp', 'items': [
+        {'name': 'cleaning'},
+    ]},
+    {'label': 'Обратная связь', 'app_label': 'webapp', 'items': [
+        {'name': 'feedback'},
+    ]},
+    {'label': 'Номера', 'app_label': 'webapp', 'items': [
+        {'name': 'guestroom'},
+        {'name': 'accessories'},
+        {'name': 'roominess'},
+        {'name': 'roomview'},
+        {'name': 'housing'},
+        {'name': 'comfort'},
+        {'name': 'floor'},
+    ]},
+    {'label': 'Галерея', 'app_label': 'webapp', 'items': [
+        {'name': 'gallerycategory'},
+    ]},
+    {'label': 'Персонал', 'app_label': 'webapp', 'items': [
+        {'name': 'staff'},
+    ]},
+    {'label': 'О нас', 'app_label': 'webapp', 'items': [
+        {'name': 'mainpage'},
+        {'name': 'aboutus'},
+        {'name': 'contacts'},
+        {'name': 'price'},
+        {'name': 'mealprice'},
+        {'name': 'service'},
+
+    ]},
+
+]
 
 from easy_thumbnails.conf import Settings as thumbnail_settings
 THUMBNAIL_PROCESSORS = (
@@ -114,9 +179,9 @@ THUMBNAIL_PROCESSORS = (
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bishkek'
 
 USE_I18N = True
 
@@ -125,10 +190,60 @@ USE_L10N = True
 USE_TZ = True
 
 
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'staticfiles'),
+)
+
+MEDIA_URL = '/uploads/'
+MEDIA_ROOT = 'uploads/'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SILKY_PYTHON_PROFILER = False
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+REST_AUTH_SERIALIZERS = {
+    'TOKEN_SERIALIZER': 'api.serializers.TokenSerializer',
+}
+
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = False
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_SSL = True
+EMAIL_PORT = 465
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 
 try:
     from BookingCrm.local_settings import *
