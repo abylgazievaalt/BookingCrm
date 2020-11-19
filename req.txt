@@ -18,7 +18,7 @@ coreschema==0.0.4
 cryptography==2.9.2
 daphne==2.5.0
 defusedxml==0.6.0
-Django==2.2
+Django==2.2.16
 django-allauth==0.41.0
 django-appconf==1.0.4
 django-ckeditor==5.9.0
