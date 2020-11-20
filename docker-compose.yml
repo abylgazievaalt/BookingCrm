@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=kgtimes
+      - POSTGRES_USER=kgtimes_admin
+      - POSTGRES_PASSWORD=3edcvfr4
+    volumes:
+      - "./postgres:/var/lib/postgresql/data"
+
+  web:
+    build: ./
+    restart: always
+    command: bash -c "export env=dev && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
